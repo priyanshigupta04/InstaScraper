@@ -1,0 +1,54 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Django Instagram Scraper</title>
+    <link rel="stylesheet" href="{% static 'scraper/style.css' %}">
+</head>
+<body>
+    <div class="container">
+        <h1>Instagram Profile Scraper</h1>
+        <form id="scrape-form" method="POST" action="{% url 'scrape' %}">
+            {% csrf_token %}
+            <label for="username">Enter Instagram Username:</label>
+            <input type="text" id="username" name="username" placeholder="e.g., shakira" required>
+            <button type="submit">Scrape</button>
+        </form>
+        <div id="output"></div>
+    </div>
+
+    <script>
+       document.getElementById("scrape-form").addEventListener("submit", function(e) {
+            e.preventDefault();
+            const form = e.target;
+            const formData = new FormData(form);
+            fetch(form.action, {
+                method: "POST",
+                body: formData,
+            })
+            .then(response => response.json())
+            .then(data => {
+                const outputDiv = document.getElementById("output");
+                if (data.error) {
+                    outputDiv.innerHTML = `<p style="color: red;">${data.error}</p>`;
+                } else {
+                    outputDiv.innerHTML = `
+                        <div class="result">
+                            <h2>Scraped Data:</h2>
+                            <p><strong>Profile Name:</strong> ${data.data.profile_name}</p>
+                            <p><strong>Followers:</strong> ${data.data.followers}</p>
+                            <p><strong>Bio:</strong> ${data.data.bio}</p>
+                        </div>
+                    `;
+                }
+            })
+            .catch(err => {
+                console.error('Error during fetch:', err);
+            });
+        });
+
+    </script>
+</body>
+</html>
